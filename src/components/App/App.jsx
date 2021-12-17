@@ -15,21 +15,41 @@ export default class App extends Component {
     filter: '',
   };
 
+  #localestorageKey = 'contacts';
+
+  componentDidMount() {
+    const contacts = localStorage.getItem(this.#localestorageKey);
+    const parsedContacts = JSON.parse(contacts);
+
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      console.log('Change contacts!');
+      localStorage.setItem(
+        this.#localestorageKey,
+        JSON.stringify(this.state.contacts),
+      );
+    }
+  }
+
   addContact = (name, number) => {
     const { contacts } = this.state;
+    if (contacts.find(contact => contact.name === name)) {
+      return alert(`${name} is already n contacts!`);
+    }
+    if (contacts.find(contact => contact.number === number)) {
+      return alert(`${number} is already belongs to another contact!`);
+    }
+
     const newContact = {
       id: nanoid(),
       name,
       number,
     };
-    if (contacts.find(contact => contact.name === newContact.name)) {
-      return alert(`${newContact.name} is already n contacts!`);
-    }
-    if (contacts.find(contact => contact.number === newContact.number)) {
-      return alert(
-        `${newContact.number} is already belongs to another contact!`,
-      );
-    }
 
     this.setState(({ contacts }) => ({
       contacts: [newContact, ...contacts],
@@ -53,22 +73,6 @@ export default class App extends Component {
       contacts: prevState.contacts.filter(contact => contact.id !== contactId),
     }));
   };
-
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      console.log('Change contacts!');
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
 
   render() {
     const { filter } = this.state;
